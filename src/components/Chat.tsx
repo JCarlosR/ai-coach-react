@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { ScrollArea, ScrollAreaViewport, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaCorner } from "@radix-ui/react-scroll-area"
 import { Sidebar } from "./Sidebar"
 import { ChatMessage } from "./ChatMessage"
@@ -17,6 +17,7 @@ interface Conversation {
 }
 
 export function Chat() {
+  const viewportRef = useRef<HTMLDivElement>(null)
   const [conversations, setConversations] = useState<Conversation[]>([
     {
       id: "1",
@@ -44,6 +45,15 @@ export function Chat() {
     ))
   }
 
+  useEffect(() => {
+    if (viewportRef.current) {
+      viewportRef.current.scrollTo({
+        top: viewportRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentConversation?.messages])
+
   return (
     <div className="flex h-full">
       <Sidebar
@@ -54,7 +64,7 @@ export function Chat() {
       <div className="flex-1 flex flex-col h-full">
         <div className="flex-1 min-h-0">
           <ScrollArea className="h-full overflow-y-auto">
-            <ScrollAreaViewport>
+            <ScrollAreaViewport ref={viewportRef}>
               <div className="p-4 space-y-4">
                 {currentConversation?.messages.map(message => (
                   <ChatMessage
