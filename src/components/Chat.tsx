@@ -3,46 +3,66 @@ import { ScrollArea, ScrollAreaViewport, ScrollAreaScrollbar, ScrollAreaThumb, S
 import { Sidebar } from "./Sidebar"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
+import { ChatClient, Conversation } from "../api/ChatClient"
 
-interface Message {
-  id: string
-  content: string
-  isUser: boolean
-}
-
-interface Conversation {
-  id: string
-  title: string
-  messages: Message[]
-}
+const chatClient = new ChatClient()
 
 export function Chat() {
   const viewportRef = useRef<HTMLDivElement>(null)
   const [conversations, setConversations] = useState<Conversation[]>([
     {
-      id: "1",
+      id: "550e8400-e29b-41d4-a716-446655440000",
       title: "New Conversation",
       messages: []
     }
   ])
-  const [selectedConversation, setSelectedConversation] = useState<string>("1")
+  const [selectedConversation, setSelectedConversation] = useState<string>("550e8400-e29b-41d4-a716-446655440000")
+  const [isLoading, setIsLoading] = useState(false)
 
   const currentConversation = conversations.find(c => c.id === selectedConversation)
 
-  const handleSendMessage = (content: string) => {
-    if (!currentConversation) return
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!selectedConversation) return
+      
+      setIsLoading(true)
+      try {
+        const messages = await chatClient.getMessages(selectedConversation)
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content,
-      isUser: true
+        setConversations(conversations.map(conv => {
+          if (conv.id === selectedConversation) {
+            conv.messages = messages
+            return conv
+          } else {
+            return conv
+          }
+        }))
+      } catch (error) {
+        console.error('Failed to load messages:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    setConversations(conversations.map(conv => 
-      conv.id === selectedConversation
-        ? { ...conv, messages: [...conv.messages, newMessage] }
-        : conv
-    ))
+    loadMessages()
+  }, [selectedConversation])
+
+  const handleSendMessage = async (content: string) => {
+    if (!currentConversation) return
+
+    setIsLoading(true)
+    try {
+      const newMessage = await chatClient.sendMessage(selectedConversation, content)
+      setConversations(conversations.map(conv => 
+        conv.id === selectedConversation
+          ? { ...conv, messages: [...conv.messages, newMessage] }
+          : conv
+      ))
+    } catch (error) {
+      console.error('Failed to send message:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -66,13 +86,17 @@ export function Chat() {
           <ScrollArea className="h-full overflow-y-auto">
             <ScrollAreaViewport ref={viewportRef}>
               <div className="p-4 space-y-4">
-                {currentConversation?.messages.map(message => (
-                  <ChatMessage
-                    key={message.id}
-                    content={message.content}
-                    isUser={message.isUser}
-                  />
-                ))}
+                {isLoading ? (
+                  <div className="text-center">Loading...</div>
+                ) : (
+                  currentConversation?.messages.map((message, index) => (
+                    <ChatMessage
+                      key={index}
+                      content={message.content}
+                      isUser={message.role === "user"}
+                    />
+                  ))
+                )}
               </div>
             </ScrollAreaViewport>
             <ScrollAreaScrollbar orientation="vertical" className="w-2">
@@ -82,7 +106,7 @@ export function Chat() {
           </ScrollArea>
         </div>
         <div className="border-t border-border">
-          <ChatInput onSend={handleSendMessage} />
+          <ChatInput onSend={handleSendMessage} disabled={isLoading} />
         </div>
       </div>
     </div>
