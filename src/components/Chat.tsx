@@ -4,6 +4,8 @@ import { Sidebar } from "./Sidebar"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
 import { ChatClient, Conversation } from "../api/ChatClient"
+import { playNotificationSound } from "../lib/sound"
+import { TypingIndicator } from "./TypingIndicator"
 
 const chatClient = new ChatClient()
 
@@ -51,13 +53,27 @@ export function Chat() {
     if (!currentConversation) return
 
     setIsLoading(true)
+    
     try {
-      const newMessage = await chatClient.sendMessage(selectedConversation, content)
+      const coachResponse = await chatClient.sendMessage(selectedConversation, content)
+
+      const userMessage = {
+        content: content,
+        role: "user"
+      }
+
+      const coachMessage = {
+        content: coachResponse,
+        role: "assistant"
+      }
+
       setConversations(conversations.map(conv => 
         conv.id === selectedConversation
-          ? { ...conv, messages: [...conv.messages, newMessage] }
+          ? { ...conv, messages: [...conv.messages, userMessage, coachMessage] }
           : conv
       ))
+
+      playNotificationSound()
     } catch (error) {
       console.error('Failed to send message:', error)
     } finally {
@@ -86,16 +102,17 @@ export function Chat() {
           <ScrollArea className="h-full overflow-y-auto">
             <ScrollAreaViewport ref={viewportRef}>
               <div className="p-4 space-y-4">
-                {isLoading ? (
-                  <div className="text-center">Loading...</div>
-                ) : (
-                  currentConversation?.messages.map((message, index) => (
-                    <ChatMessage
-                      key={index}
-                      content={message.content}
-                      isUser={message.role === "user"}
-                    />
-                  ))
+                {currentConversation?.messages.map((message, index) => (
+                  <ChatMessage
+                    key={index}
+                    content={message.content}
+                    isUser={message.role === "user"}
+                  />
+                ))}
+                {isLoading && (
+                  <div className="flex justify-center items-center h-12">
+                    <TypingIndicator />
+                  </div>
                 )}
               </div>
             </ScrollAreaViewport>
