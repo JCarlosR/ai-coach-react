@@ -1,13 +1,4 @@
-export interface Message {
-  content: string;
-  role: string;
-}
-
-export interface Conversation {
-  id: string;
-  title: string;
-  messages: Message[];
-}
+import { Message } from './types';
 
 export class ChatClient {
   private baseUrl: string;

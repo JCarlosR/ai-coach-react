@@ -1,79 +1,26 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, Key } from "react"
 import { ScrollArea, ScrollAreaViewport, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaCorner } from "@radix-ui/react-scroll-area"
-import { Sidebar } from "./Sidebar"
 import { ChatMessage } from "./ChatMessage"
 import { ChatInput } from "./ChatInput"
-import { ChatClient, Conversation } from "../api/ChatClient"
-import { playNotificationSound } from "../lib/sound"
 import { TypingIndicator } from "./TypingIndicator"
+import { Conversation, Message } from "../api/types"
 
-const chatClient = new ChatClient()
+interface ChatProps {
+  conversation: Conversation | undefined
+  onSendMessage: (content: string) => Promise<void>
+}
 
-export function Chat() {
+export function Chat({ conversation, onSendMessage }: ChatProps) {
   const viewportRef = useRef<HTMLDivElement>(null)
-  const [conversations, setConversations] = useState<Conversation[]>([
-    {
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      title: "New Conversation",
-      messages: []
-    }
-  ])
-  const [selectedConversation, setSelectedConversation] = useState<string>("550e8400-e29b-41d4-a716-446655440000")
   const [isLoading, setIsLoading] = useState(false)
 
-  const currentConversation = conversations.find(c => c.id === selectedConversation)
-
-  useEffect(() => {
-    const loadMessages = async () => {
-      if (!selectedConversation) return
-      
-      setIsLoading(true)
-      try {
-        const messages = await chatClient.getMessages(selectedConversation)
-
-        setConversations(conversations.map(conv => {
-          if (conv.id === selectedConversation) {
-            conv.messages = messages
-            return conv
-          } else {
-            return conv
-          }
-        }))
-      } catch (error) {
-        console.error('Failed to load messages:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadMessages()
-  }, [selectedConversation])
-
   const handleSendMessage = async (content: string) => {
-    if (!currentConversation) return
+    if (!conversation) return
 
     setIsLoading(true)
     
     try {
-      const coachResponse = await chatClient.sendMessage(selectedConversation, content)
-
-      const userMessage = {
-        content: content,
-        role: "user"
-      }
-
-      const coachMessage = {
-        content: coachResponse,
-        role: "assistant"
-      }
-
-      setConversations(conversations.map(conv => 
-        conv.id === selectedConversation
-          ? { ...conv, messages: [...conv.messages, userMessage, coachMessage] }
-          : conv
-      ))
-
-      playNotificationSound()
+      await onSendMessage(content)
     } catch (error) {
       console.error('Failed to send message:', error)
     } finally {
@@ -88,43 +35,36 @@ export function Chat() {
         behavior: 'smooth'
       });
     }
-  }, [currentConversation?.messages])
+  }, [conversation?.messages, isLoading])
 
   return (
-    <div className="flex h-full">
-      <Sidebar
-        conversations={conversations}
-        selectedConversation={selectedConversation}
-        onSelectConversation={setSelectedConversation}
-      />
-      <div className="flex-1 flex flex-col h-full">
-        <div className="flex-1 min-h-0">
-          <ScrollArea className="h-full overflow-y-auto">
-            <ScrollAreaViewport ref={viewportRef}>
-              <div className="p-4 space-y-4">
-                {currentConversation?.messages.map((message, index) => (
-                  <ChatMessage
-                    key={index}
-                    content={message.content}
-                    isUser={message.role === "user"}
-                  />
-                ))}
-                {isLoading && (
-                  <div className="flex justify-center items-center h-12">
-                    <TypingIndicator />
-                  </div>
-                )}
-              </div>
-            </ScrollAreaViewport>
-            <ScrollAreaScrollbar orientation="vertical" className="w-2">
-              <ScrollAreaThumb className="bg-gray-500" />
-            </ScrollAreaScrollbar>
-            <ScrollAreaCorner />
-          </ScrollArea>
-        </div>
-        <div className="border-t border-border">
-          <ChatInput onSend={handleSendMessage} disabled={isLoading} />
-        </div>
+    <div className="flex-1 flex flex-col h-full">
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full overflow-y-auto">
+          <ScrollAreaViewport ref={viewportRef}>
+            <div className="p-4 space-y-4">
+              {conversation?.messages.map((message: Message, index: Key) => (
+                <ChatMessage
+                  key={index}
+                  content={message.content}
+                  isUser={message.role === "user"}
+                />
+              ))}
+              {isLoading && (
+                <div className="flex justify-center items-center h-12">
+                  <TypingIndicator />
+                </div>
+              )}
+            </div>
+          </ScrollAreaViewport>
+          <ScrollAreaScrollbar orientation="vertical" className="w-2">
+            <ScrollAreaThumb className="bg-gray-500" />
+          </ScrollAreaScrollbar>
+          <ScrollAreaCorner />
+        </ScrollArea>
+      </div>
+      <div className="border-t border-border">
+        <ChatInput onSend={handleSendMessage} disabled={isLoading} />
       </div>
     </div>
   )

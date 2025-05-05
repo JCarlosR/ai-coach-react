@@ -28,6 +28,7 @@ export function Sidebar({ conversations, selectedConversation, onSelectConversat
               onClick={() => onSelectConversation(conversation.id)}
               className={cn(
                 "w-full p-2 text-left rounded-md hover:bg-accent",
+                "transition-colors duration-200",
                 selectedConversation === conversation.id && "bg-accent"
               )}
             >
