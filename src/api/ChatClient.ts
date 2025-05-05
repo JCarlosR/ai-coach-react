@@ -3,7 +3,7 @@ import { Message } from './types';
 export class ChatClient {
   private baseUrl: string;
 
-  constructor(baseUrl: string = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000') {
+  constructor(baseUrl: string = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') {
     this.baseUrl = baseUrl;
   }
 
