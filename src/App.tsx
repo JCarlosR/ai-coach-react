@@ -1,114 +1,15 @@
-import { useState, useEffect } from "react"
-import { Sidebar } from "./components/Sidebar"
-import { Chat } from "./components/Chat"
-import { Menu } from "lucide-react"
-import { cn } from "./lib/utils"
-import { ChatClient } from "./api/ChatClient"
-import { playNotificationSound } from "./lib/sound"
-import { Message, Conversation } from "./api/types"
-
-const chatClient = new ChatClient()
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { LandingPage } from "./components/LandingPage"
+import { ChatPage } from "./components/ChatPage"
 
 function App() {
-  const [conversations, setConversations] = useState<Conversation[]>([
-    {
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      title: "New Conversation",
-      messages: []
-    }
-  ])
-  const [selectedConversation, setSelectedConversation] = useState<string>("550e8400-e29b-41d4-a716-446655440000")
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-
-  const currentConversation = conversations.find(c => c.id === selectedConversation)
-
-  useEffect(() => {
-    const loadMessages = async () => {
-      if (!selectedConversation) return
-      
-      try {
-        const messages = await chatClient.getMessages(selectedConversation)
-        setConversations(conversations.map(conv => {
-          if (conv.id === selectedConversation) {
-            return { ...conv, messages }
-          }
-          return conv
-        }))
-      } catch (error) {
-        console.error('Failed to load messages:', error)
-      }
-    }
-
-    loadMessages()
-  }, [selectedConversation])
-
-  const addMessageToConversation = (message: Message) => {
-    setConversations(prevConversations => 
-      prevConversations.map(conv => 
-        conv.id === selectedConversation
-          ? { ...conv, messages: [...conv.messages, message] }
-          : conv
-      )
-    )
-  }
-
-  const handleSendMessage = async (content: string) => {
-    if (!currentConversation) return
-
-    // Add user message immediately
-    addMessageToConversation({ content, role: "user" })
-
-    try {
-      const coachResponse = await chatClient.sendMessage(selectedConversation, content)
-      
-      // Add coach message after receiving response
-      addMessageToConversation({ content: coachResponse, role: "assistant" })
-      
-      playNotificationSound()
-    } catch (error) {
-      console.error('Failed to send message:', error)
-      throw error
-    }
-  }
-
   return (
-    <div className="h-screen w-screen overflow-hidden">
-      <div className="flex h-full">
-        <div className={cn(
-          "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm",
-          "md:hidden",
-          isSidebarOpen ? "block" : "hidden"
-        )} onClick={() => setIsSidebarOpen(false)} />
-        <div className={cn(
-          "fixed md:relative z-50 h-full transition-transform duration-300 ease-in-out",
-          "md:translate-x-0",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}>
-          <Sidebar
-            conversations={conversations}
-            selectedConversation={selectedConversation}
-            onSelectConversation={(id) => {
-              setSelectedConversation(id)
-              setIsSidebarOpen(false)
-            }}
-          />
-        </div>
-        <div className="flex-1 flex flex-col h-full">
-          <div className="flex items-center p-4 md:hidden">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-md hover:bg-accent"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-          </div>
-          <Chat
-            conversation={currentConversation}
-            onSendMessage={handleSendMessage}
-          />
-        </div>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/chat" element={<ChatPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
