@@ -1,9 +1,11 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useLanguage } from '../context/LanguageContext'
+import { useConversations } from '../context/ConversationsContext'
 import { LanguageToggle } from './LanguageToggle'
 import { ChatClient } from "../api/ChatClient"
 import { AuthService } from "../api/AuthService"
+import { Conversation } from "../api/types"
 
 const chatClient = new ChatClient()
 
@@ -50,6 +52,7 @@ const translations = {
 
 export function LandingPage() {
   const { language } = useLanguage()
+  const { setConversations, setSelectedConversation } = useConversations()
   const t = translations[language]
   const navigate = useNavigate()
 
@@ -62,6 +65,21 @@ export function LandingPage() {
         try {
           const response = await chatClient.exchangeCodeForToken(code)
           AuthService.setAuthData(response.access_token, response.user)
+          
+          // Format and set conversations from the token response
+          const formattedConversations: Conversation[] = response.conversations.map(conversationId => ({
+            id: conversationId,
+            title: "New Conversation",
+            messages: []
+          }))
+          setConversations(formattedConversations)
+          
+          // Set the first conversation as selected
+          if (formattedConversations.length > 0) {
+            console.log('Setting selected conversation:', formattedConversations[0].id)
+            setSelectedConversation(formattedConversations[0].id)
+          }
+          
           navigate('/chat')
         } catch (error) {
           console.error('Failed to exchange code for token:', error)
@@ -70,7 +88,7 @@ export function LandingPage() {
     }
 
     handleAuthCode()
-  }, [navigate])
+  }, [navigate, setConversations])
 
   const handleStartClick = () => {
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/login`

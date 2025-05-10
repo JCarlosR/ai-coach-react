@@ -6,51 +6,47 @@ import { cn } from "../lib/utils"
 import { ChatClient } from "../api/ChatClient"
 import { playNotificationSound } from "../lib/sound"
 import { Message, Conversation } from "../api/types"
+import { useConversations } from "../context/ConversationsContext"
 
 const chatClient = new ChatClient()
 
 export function ChatPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([
-    {
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      title: "New Conversation",
-      messages: []
-    }
-  ])
-  const [selectedConversation, setSelectedConversation] = useState<string>("550e8400-e29b-41d4-a716-446655440000")
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const { conversations, setConversations, selectedConversation, setSelectedConversation } = useConversations();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const currentConversation = conversations.find(c => c.id === selectedConversation)
+  const currentConversation = conversations.find(c => c.id === selectedConversation);
 
   useEffect(() => {
     const loadMessages = async () => {
-      if (!selectedConversation) return
+      if (!selectedConversation) return;
       
       try {
-        const messages = await chatClient.getMessages(selectedConversation)
-        setConversations(conversations.map(conv => {
-          if (conv.id === selectedConversation) {
-            return { ...conv, messages }
-          }
-          return conv
-        }))
+        const messages = await chatClient.getMessages(selectedConversation);
+        setConversations((prevConversations: Conversation[]) => 
+          prevConversations.map((conv: Conversation) => {
+            if (conv.id === selectedConversation) {
+              return { ...conv, messages };
+            }
+            return conv;
+          })
+        );
       } catch (error) {
-        console.error('Failed to load messages:', error)
+        console.error('Failed to load messages:', error);
       }
-    }
+    };
 
-    loadMessages()
-  }, [selectedConversation])
+    loadMessages();
+  }, [selectedConversation]);
 
   const addMessageToConversation = (message: Message) => {
-    setConversations(prevConversations => 
-      prevConversations.map(conv => 
+    setConversations((prevConversations: Conversation[]) => 
+      prevConversations.map((conv: Conversation) => 
         conv.id === selectedConversation
           ? { ...conv, messages: [...conv.messages, message] }
           : conv
       )
-    )
-  }
+    );
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!currentConversation) return

@@ -4,6 +4,7 @@ import { AuthService } from './AuthService';
 interface TokenResponse {
   access_token: string;
   user: User;
+  conversations: string[];
 }
 
 export class ChatClient {
