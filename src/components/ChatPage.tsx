@@ -93,6 +93,16 @@ export function ChatPage() {
     }
   }
 
+  const handleNewConversation = async (newConversationId: string) => {
+    const newConversation = {
+      id: newConversationId,
+      title: "New Conversation",
+      messages: []
+    }
+    setConversations(prev => [...prev, newConversation])
+    setSelectedConversation(newConversationId)
+  }
+
   return (
     <div className="h-screen w-screen overflow-hidden">
       <div className="flex h-full">
@@ -113,6 +123,7 @@ export function ChatPage() {
               setSelectedConversation(id)
               setIsSidebarOpen(false)
             }}
+            onNewConversation={handleNewConversation}
           />
         </div>
         <div className="flex-1 flex flex-col h-full">
