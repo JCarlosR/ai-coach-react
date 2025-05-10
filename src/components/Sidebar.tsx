@@ -50,9 +50,11 @@ export function Sidebar({ conversations, selectedConversation, onSelectConversat
               key={conversation.id}
               onClick={() => onSelectConversation(conversation.id)}
               className={cn(
-                "w-full p-2 text-left rounded-md hover:bg-accent",
+                "w-full p-2 text-left rounded-md",
                 "transition-colors duration-200",
-                selectedConversation === conversation.id && "bg-accent"
+                selectedConversation === conversation.id 
+                  ? "bg-accent" 
+                  : "hover:bg-accent/50"
               )}
             >
               {conversation.title}
