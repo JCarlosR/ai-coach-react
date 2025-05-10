@@ -16,6 +16,32 @@ export function ChatPage() {
 
   const currentConversation = conversations.find(c => c.id === selectedConversation);
 
+  // Fetch conversations if the array is empty
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const conversationIds = await chatClient.getConversations();
+        const formattedConversations: Conversation[] = conversationIds.map(id => ({
+          id,
+          title: "New Conversation",
+          messages: []
+        }));
+        setConversations(formattedConversations);
+        
+        // Set the first conversation as selected if available
+        if (formattedConversations.length > 0) {
+          setSelectedConversation(formattedConversations[0].id);
+        }
+      } catch (error) {
+        console.error('Failed to fetch conversations:', error);
+      }
+    };
+
+    if (conversations.length === 0) {
+      fetchConversations();
+    }
+  }, [conversations.length]);
+
   useEffect(() => {
     const loadMessages = async () => {
       if (!selectedConversation) return;
