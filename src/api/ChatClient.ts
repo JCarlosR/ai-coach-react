@@ -1,20 +1,25 @@
-import { Message } from './types';
+import { Message, User } from './types';
+import { AuthService } from './AuthService';
+
+interface TokenResponse {
+  access_token: string;
+  user: User;
+}
 
 export class ChatClient {
   private baseUrl: string;
-  private token: string | null = null;
 
   constructor(baseUrl: string = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') {
     this.baseUrl = baseUrl;
   }
 
   /**
-   * Exchange an authorization code for a JWT token
+   * Exchange an authorization code for a JWT token and user information
    * 
    * @param code The authorization code to exchange
-   * @returns The JWT token
+   * @returns The complete response containing token and user information
    */
-  async exchangeCodeForToken(code: string): Promise<string> {
+  async exchangeCodeForToken(code: string): Promise<TokenResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/token?code=${encodeURIComponent(code)}`, {
         method: 'GET',
@@ -25,9 +30,7 @@ export class ChatClient {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
-      this.token = result.token;
-      return result.token;
+      return await response.json();
     } catch (error) {
       console.error('Error exchanging code for token:', error);
       throw error;
@@ -46,7 +49,7 @@ export class ChatClient {
         method: "GET",
         credentials: "include",
         headers: {
-          'Authorization': `Bearer ${this.token}`
+          'Authorization': `Bearer ${AuthService.getToken()}`
         }
       });
       
@@ -74,7 +77,7 @@ export class ChatClient {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`
+          'Authorization': `Bearer ${AuthService.getToken()}`
         },
         body: JSON.stringify({ 
           user_input: content
@@ -104,7 +107,7 @@ export class ChatClient {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`
+          'Authorization': `Bearer ${AuthService.getToken()}`
         },
       });
 

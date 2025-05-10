@@ -1,5 +1,11 @@
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { useLanguage } from '../context/LanguageContext'
 import { LanguageToggle } from './LanguageToggle'
+import { ChatClient } from "../api/ChatClient"
+import { AuthService } from "../api/AuthService"
+
+const chatClient = new ChatClient()
 
 const translations = {
   en: {
@@ -45,6 +51,26 @@ const translations = {
 export function LandingPage() {
   const { language } = useLanguage()
   const t = translations[language]
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const handleAuthCode = async () => {
+      const urlParams = new URLSearchParams(window.location.search)
+      const code = urlParams.get('code')
+      
+      if (code) {
+        try {
+          const response = await chatClient.exchangeCodeForToken(code)
+          AuthService.setAuthData(response.access_token, response.user)
+          navigate('/chat')
+        } catch (error) {
+          console.error('Failed to exchange code for token:', error)
+        }
+      }
+    }
+
+    handleAuthCode()
+  }, [navigate])
 
   const handleStartClick = () => {
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/login`
