@@ -123,4 +123,30 @@ export class ChatClient {
       throw error;
     }
   }
+
+  /**
+   * Get all conversations for the authenticated user.
+   * 
+   * @returns Array of conversation IDs
+   */
+  async getConversations(): Promise<string[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/conversations`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${AuthService.getToken()}`
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      return [];
+    }
+  }
 } 
