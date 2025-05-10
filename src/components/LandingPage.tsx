@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { LanguageToggle } from './LanguageToggle'
 
@@ -44,9 +43,12 @@ const translations = {
 }
 
 export function LandingPage() {
-  const navigate = useNavigate()
   const { language } = useLanguage()
   const t = translations[language]
+
+  const handleStartClick = () => {
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/login`
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -82,7 +84,7 @@ export function LandingPage() {
           </div>
 
           <button
-            onClick={() => navigate('/chat')}
+            onClick={handleStartClick}
             className="px-8 py-4 text-lg font-semibold bg-blue-600 hover:bg-blue-700 rounded-full transition-colors duration-200"
           >
             {t.startButton}
