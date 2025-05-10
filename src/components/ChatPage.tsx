@@ -21,9 +21,9 @@ export function ChatPage() {
     const fetchConversations = async () => {
       try {
         const conversationIds = await chatClient.getConversations();
-        const formattedConversations: Conversation[] = conversationIds.map(id => ({
+        const formattedConversations: Conversation[] = conversationIds.map((id, index) => ({
           id,
-          title: "New Conversation",
+          title: `Conversation #${index + 1}`,
           messages: []
         }));
         setConversations(formattedConversations);
@@ -96,7 +96,7 @@ export function ChatPage() {
   const handleNewConversation = async (newConversationId: string) => {
     const newConversation = {
       id: newConversationId,
-      title: "New Conversation",
+      title: `Conversation #${conversations.length + 1}`,
       messages: []
     }
     setConversations(prev => [...prev, newConversation])
