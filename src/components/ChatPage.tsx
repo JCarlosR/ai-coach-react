@@ -7,12 +7,14 @@ import { playNotificationSound } from "../lib/sound"
 import { Message, Conversation } from "../api/types"
 import { useConversations } from "../context/ConversationsContext"
 import { TopBar } from "./TopBar"
+import { WelcomeMessage } from "./WelcomeMessage"
 
 const chatClient = new ChatClient()
 
 export function ChatPage() {
   const { conversations, setConversations, selectedConversation, setSelectedConversation } = useConversations();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   const currentConversation = conversations.find(c => c.id === selectedConversation);
 
@@ -104,42 +106,33 @@ export function ChatPage() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden">
-      <div className="flex h-full">
-        {/* Backdrop overlay for mobile */}
-        <div className={cn(
-          "fixed inset-0 z-40 bg-background/80 backdrop-blur-sm",
-          "md:hidden",
-          isSidebarOpen ? "block" : "hidden"
-        )} onClick={() => setIsSidebarOpen(false)} />
-
-        {/* Sidebar */}
-        <div className={cn(
-          "fixed md:relative z-50 h-full transition-transform duration-300 ease-in-out",
-          "md:translate-x-0",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}>
-          <Sidebar
-            conversations={conversations}
-            selectedConversation={selectedConversation}
-            onSelectConversation={(id) => {
-              setSelectedConversation(id)
-              setIsSidebarOpen(false)
-            }}
-            onNewConversation={handleNewConversation}
+    <div className="flex h-screen">
+      {showWelcome && <WelcomeMessage onClose={() => setShowWelcome(false)} />}
+      <div className={cn(
+        "w-64 h-full border-r border-border bg-background flex flex-col",
+        isSidebarOpen ? "fixed md:relative z-50" : "hidden md:flex"
+      )}>
+        <Sidebar
+          conversations={conversations}
+          selectedConversation={selectedConversation}
+          onSelectConversation={(id) => {
+            setSelectedConversation(id);
+            setIsSidebarOpen(false);
+          }}
+          onNewConversation={handleNewConversation}
+        />
+      </div>
+      <div className={cn(
+        "flex-1 flex flex-col",
+        isSidebarOpen ? "hidden md:flex" : "flex"
+      )}>
+        <TopBar onToggleSidebar={() => setIsSidebarOpen(true)} />
+        {currentConversation && (
+          <Chat
+            conversation={currentConversation}
+            onSendMessage={handleSendMessage}
           />
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
-          <TopBar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-          <div className="flex-1 overflow-hidden">
-            <Chat
-              conversation={currentConversation}
-              onSendMessage={handleSendMessage}
-            />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

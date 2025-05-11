@@ -65,6 +65,7 @@ export function LandingPage() {
         try {
           const response = await chatClient.exchangeCodeForToken(code)
           AuthService.setAuthData(response.access_token, response.user)
+          AuthService.setJustLoggedIn(true)
           
           // Format and set conversations from the token response
           const formattedConversations: Conversation[] = response.conversations.map(conversationId => ({

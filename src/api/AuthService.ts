@@ -3,6 +3,7 @@ import { User } from './types';
 export class AuthService {
   private static readonly TOKEN_KEY = 'auth_token';
   private static readonly USER_KEY = 'user_info';
+  private static readonly JUST_LOGGED_IN_KEY = 'just_logged_in';
 
   static getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
@@ -25,5 +26,17 @@ export class AuthService {
 
   static isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  static setJustLoggedIn(value: boolean): void {
+    localStorage.setItem(this.JUST_LOGGED_IN_KEY, value ? 'true' : 'false');
+  }
+
+  static isJustLoggedIn(): boolean {
+    return localStorage.getItem(this.JUST_LOGGED_IN_KEY) === 'true';
+  }
+
+  static clearJustLoggedIn(): void {
+    localStorage.removeItem(this.JUST_LOGGED_IN_KEY);
   }
 } 
