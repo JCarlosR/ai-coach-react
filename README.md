@@ -1,8 +1,10 @@
 # AI Coach
 
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://ai-coach-teal.vercel.app)
+
 A modern web application built with React and TypeScript that provides AI-powered productivity coaching.
 
-![AI Coach Bot](public/coach.jpeg)
+<img src="public/coach.jpeg" alt="AI Coach Bot" width="300"/>
 
 ## Technologies
 
@@ -34,12 +36,6 @@ src/
 - Component-based architecture
 - Responsive design
 - Client-side routing with React Router
-
-## Deployment
-
-The application is deployed on Vercel:
-
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://ai-coach-teal.vercel.app)
 
 ## Getting Started
 
