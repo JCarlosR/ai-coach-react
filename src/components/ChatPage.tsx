@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react"
 import { Sidebar } from "./Sidebar"
 import { Chat } from "./Chat"
-import { Menu } from "lucide-react"
 import { cn } from "../lib/utils"
 import { ChatClient } from "../api/ChatClient"
 import { playNotificationSound } from "../lib/sound"
 import { Message, Conversation } from "../api/types"
 import { useConversations } from "../context/ConversationsContext"
+import { TopBar } from "./TopBar"
 
 const chatClient = new ChatClient()
 
@@ -106,11 +106,14 @@ export function ChatPage() {
   return (
     <div className="h-screen w-screen overflow-hidden">
       <div className="flex h-full">
+        {/* Backdrop overlay for mobile */}
         <div className={cn(
-          "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm",
+          "fixed inset-0 z-40 bg-background/80 backdrop-blur-sm",
           "md:hidden",
           isSidebarOpen ? "block" : "hidden"
         )} onClick={() => setIsSidebarOpen(false)} />
+
+        {/* Sidebar */}
         <div className={cn(
           "fixed md:relative z-50 h-full transition-transform duration-300 ease-in-out",
           "md:translate-x-0",
@@ -126,19 +129,16 @@ export function ChatPage() {
             onNewConversation={handleNewConversation}
           />
         </div>
-        <div className="flex-1 flex flex-col h-full">
-          <div className="flex items-center p-4 md:hidden">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-md hover:bg-accent"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <TopBar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+          <div className="flex-1 overflow-hidden">
+            <Chat
+              conversation={currentConversation}
+              onSendMessage={handleSendMessage}
+            />
           </div>
-          <Chat
-            conversation={currentConversation}
-            onSendMessage={handleSendMessage}
-          />
         </div>
       </div>
     </div>
