@@ -42,7 +42,7 @@ export function Chat({ conversation, onSendMessage }: ChatProps) {
       <div className="flex-1 min-h-0 relative">
         <ScrollArea className="h-full">
           <ScrollAreaViewport ref={viewportRef}>
-            <div className="p-4 space-y-4 pb-6">
+            <div className="p-4 space-y-4 pb-24">
               {conversation?.messages.map((message: Message, index: Key) => (
                 <ChatMessage
                   key={index}
@@ -63,7 +63,7 @@ export function Chat({ conversation, onSendMessage }: ChatProps) {
           <ScrollAreaCorner />
         </ScrollArea>
       </div>
-      <div className="border-t border-border sticky bottom-0 bg-background">
+      <div className="border-t border-border sticky bottom-0 bg-background z-10">
         <ChatInput onSend={handleSendMessage} disabled={isLoading} />
       </div>
     </div>

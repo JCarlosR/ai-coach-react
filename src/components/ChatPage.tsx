@@ -106,10 +106,10 @@ export function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden">
       {showWelcome && <WelcomeMessage onClose={() => setShowWelcome(false)} />}
       <div className={cn(
-        "w-64 h-full border-r border-border bg-background flex flex-col",
+        "w-64 h-full border-r border-border bg-background flex flex-col overflow-hidden",
         isSidebarOpen ? "fixed md:relative z-50" : "hidden md:flex"
       )}>
         <Sidebar
@@ -123,7 +123,7 @@ export function ChatPage() {
         />
       </div>
       <div className={cn(
-        "flex-1 flex flex-col",
+        "flex-1 flex flex-col overflow-hidden",
         isSidebarOpen ? "hidden md:flex" : "flex"
       )}>
         <TopBar onToggleSidebar={() => setIsSidebarOpen(true)} />
